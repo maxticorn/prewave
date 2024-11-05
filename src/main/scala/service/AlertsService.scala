@@ -11,11 +11,18 @@ class AlertsServiceImpl(apiClient: PrewaveApiClient) extends AlertsService:
   private case class Result(termId: TermId, alertId: AlertId)
 
   def findTerms: IO[Map[AlertId, Set[TermId]]] =
-    for {
-      terms <- apiClient.getQueryTerms
-      alerts <- apiClient.getAlerts
+    (for {
+      terms <- apiClient.getQueryTerms.onError(th => IO.println(s"error while getting query terms: ${th.getMessage}"))
+      alerts <- apiClient.getAlerts.onError(th => IO.println(s"error while getting alerts: ${th.getMessage}"))
       results = terms.flatMap(findTermInAlerts(alerts, _))
-    } yield results.groupBy(_.alertId).view.mapValues(_.map(_.termId)).toMap
+    } yield results.groupBy(_.alertId).view.mapValues(_.map(_.termId)).toMap)
+      .handleError(_ => Map.empty)
+      // decided to just return empty value in case of failure and log where the error happened
+      // since I think it is enough for such a program.
+      // would consider logs/traces/metrics for observability
+      // and specific responses for different cases
+      // if it was a http server.
+
 
   private def findTermInAlerts(alerts: List[Alert], term: QueryTerm) =
     val lowerTerm = term.text.toLowerCase

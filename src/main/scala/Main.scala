@@ -7,6 +7,8 @@ import pureconfig.*
 import cats.syntax.either.*
 
 object Main extends IOApp:
+  // for such a small project I didn't find it necessary to use DI
+  // but in project with a lot of dependencies I would prefer to use some DI library or ZIO layers
   private def buildService: Resource[IO, AlertsService] =
     for {
       config <- Resource.eval(IO(ConfigSource.default.loadOrThrow[PrewaveApiConfig]))
