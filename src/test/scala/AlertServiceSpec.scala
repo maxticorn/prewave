@@ -8,7 +8,6 @@ import domain.*
 
 import java.time.LocalDateTime
 
-// for some reason, only class works here; object will not be detected by sbt
 class AlertServiceSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers {
   "AlertService" - {
     "return empty if everything is empty" in {
