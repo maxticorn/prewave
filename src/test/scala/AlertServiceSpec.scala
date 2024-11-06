@@ -11,27 +11,27 @@ import java.time.LocalDateTime
 class AlertServiceSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers {
   "AlertService" - {
     "return empty if everything is empty" in {
-      val emptyApiClient = new PrewaveApiClient {
+      val apiClient = new PrewaveApiClient {
         def getQueryTerms: IO[Set[QueryTerm]] = IO.pure(Set.empty)
 
         def getAlerts: IO[List[Alert]] = IO.pure(List.empty)
       }
-      val emptyAlertsService = new AlertsServiceImpl(emptyApiClient)
-      emptyAlertsService.findTerms.asserting(_ shouldEqual Map.empty)
+      val alertsService = new AlertsServiceImpl(apiClient)
+      alertsService.findTerms.asserting(_ shouldEqual Map.empty)
     }
 
     "return empty if client throws" in {
-      val emptyApiClient = new PrewaveApiClient {
+      val apiClient = new PrewaveApiClient {
         def getQueryTerms: IO[Set[QueryTerm]] = IO.raiseError(new Throwable())
 
         def getAlerts: IO[List[Alert]] = IO.raiseError(new Throwable())
       }
-      val emptyAlertsService = new AlertsServiceImpl(emptyApiClient)
-      emptyAlertsService.findTerms.asserting(_ shouldEqual Map.empty)
+      val alertsService = new AlertsServiceImpl(apiClient)
+      alertsService.findTerms.asserting(_ shouldEqual Map.empty)
     }
 
     "find ordered terms" in {
-      val emptyApiClient = new PrewaveApiClient {
+      val apiClient = new PrewaveApiClient {
         def getQueryTerms: IO[Set[QueryTerm]] =
           IO.pure(Set(
             QueryTerm(0, "test term", Language.English, true),
@@ -44,12 +44,12 @@ class AlertServiceSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers {
             Alert("a", List(Content("ordered test term search", ContentType.text, Language.English)), LocalDateTime.now(), InputType.link)
           ))
       }
-      val emptyAlertsService = new AlertsServiceImpl(emptyApiClient)
-      emptyAlertsService.findTerms.asserting(_ shouldEqual Map("a" -> Set(0, 1)))
+      val alertsService = new AlertsServiceImpl(apiClient)
+      alertsService.findTerms.asserting(_ shouldEqual Map("a" -> Set(0, 1)))
     }
 
     "find unordered terms" in {
-      val emptyApiClient = new PrewaveApiClient {
+      val apiClient = new PrewaveApiClient {
         def getQueryTerms: IO[Set[QueryTerm]] =
           IO.pure(Set(
             QueryTerm(0, "unordered test", Language.English, false),
@@ -61,8 +61,8 @@ class AlertServiceSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers {
             Alert("a", List(Content("unordered term test search", ContentType.text, Language.English)), LocalDateTime.now(), InputType.link)
           ))
       }
-      val emptyAlertsService = new AlertsServiceImpl(emptyApiClient)
-      emptyAlertsService.findTerms.asserting(_ shouldEqual Map("a" -> Set(0)))
+      val alertsService = new AlertsServiceImpl(apiClient)
+      alertsService.findTerms.asserting(_ shouldEqual Map("a" -> Set(0)))
     }
   }
 }
