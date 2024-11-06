@@ -31,7 +31,7 @@ class AlertServiceSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers {
       emptyAlertsService.findTerms.asserting(_ shouldEqual Map.empty)
     }
 
-    "find terms" in {
+    "find ordered terms" in {
       val emptyApiClient = new PrewaveApiClient {
         def getQueryTerms: IO[Set[QueryTerm]] =
           IO.pure(Set(
@@ -47,6 +47,23 @@ class AlertServiceSpec extends AsyncFreeSpec with AsyncIOSpec with Matchers {
       }
       val emptyAlertsService = new AlertsServiceImpl(emptyApiClient)
       emptyAlertsService.findTerms.asserting(_ shouldEqual Map("a" -> Set(0, 1)))
+    }
+
+    "find unordered terms" in {
+      val emptyApiClient = new PrewaveApiClient {
+        def getQueryTerms: IO[Set[QueryTerm]] =
+          IO.pure(Set(
+            QueryTerm(0, "unordered test", Language.English, false),
+            QueryTerm(1, "unordered test", Language.English, true)
+          ))
+
+        def getAlerts: IO[List[Alert]] =
+          IO.pure(List(
+            Alert("a", List(Content("unordered term test search", ContentType.text, Language.English)), LocalDateTime.now(), InputType.link)
+          ))
+      }
+      val emptyAlertsService = new AlertsServiceImpl(emptyApiClient)
+      emptyAlertsService.findTerms.asserting(_ shouldEqual Map("a" -> Set(0)))
     }
   }
 }
